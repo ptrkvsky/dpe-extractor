@@ -1,3 +1,4 @@
+import { corrigerClassements, DpeResult } from "@/utils/dpeUtils";
 import OpenAI from "openai";
 
 // Function to extract JSON from GPT's response
@@ -23,7 +24,7 @@ function extractJsonFromGPT(text: string): any | null {
 
 // Initialize OpenAI
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || '',
+  apiKey: process.env.OPENAI_API_KEY || "",
 });
 
 // Process DPE file through OpenAI
@@ -32,7 +33,7 @@ export async function processDPEFile(fileBuffer: Buffer, fileName: string) {
     // Upload file to OpenAI
     const blob = new Blob([fileBuffer]);
     const file = new File([blob], fileName);
-    
+
     const uploadedFile = await openai.files.create({
       file,
       purpose: "assistants",
@@ -53,9 +54,9 @@ Le JSON doit contenir les champs suivants :
 - date_realisation: la date de réalisation du DPE au format ISO (YYYY-MM-DD)
 - date_validite: la date de fin de validité du DPE au format ISO (YYYY-MM-DD)
 - consommation_energetique: la valeur numérique de la consommation d'énergie (kWh/m²/an)
-- classe_energetique: la classe énergétique (A à G)
+- classe_energetique : lettre A à G, **prioriser la lettre visuellement affichée**
 - emissions_co2: la valeur numérique des émissions de gaz à effet de serre (kg CO₂/m²/an)
-- classe_ges: la classe d'émission de gaz à effet de serre (A à G)
+- classe_ges : lettre A à G, **prioriser la lettre visuellement affichée**
 - cout_energetique_estime: un objet avec deux propriétés min et max (en euros)
 
 Exemple:
@@ -83,7 +84,8 @@ Exemple:
 
     await openai.beta.threads.messages.create(thread.id, {
       role: "user",
-      content: "Voici un DPE à analyser. Merci de me retourner les données en JSON.",
+      content:
+        "Voici un DPE à analyser. Merci de me retourner les données en JSON.",
       attachments: [
         {
           file_id: uploadedFile.id,
@@ -102,7 +104,7 @@ Exemple:
 
     // Get messages
     const messages = await openai.beta.threads.messages.list(thread.id);
-    const lastAssistantMessage = messages.data.find(
+    const lastAssistantMessage: any = messages.data.find(
       (msg) => msg.role === "assistant"
     );
 
@@ -113,8 +115,15 @@ Exemple:
     const rawText = lastAssistantMessage.content[0].text.value;
     const parsedJson = extractJsonFromGPT(rawText);
 
-    if (parsedJson) {
-      return parsedJson;
+    if (!parsedJson) {
+      throw new Error("Couldn't extract valid JSON from the response");
+    }
+
+    // On applique les corrections éventuelles
+    const corrected: DpeResult = corrigerClassements(parsedJson);
+
+    if (corrected) {
+      return corrected;
     } else {
       throw new Error("Couldn't extract valid JSON from the response");
     }
@@ -127,27 +136,27 @@ Exemple:
 // Poll for run status
 async function pollRunStatus(threadId: string, runId: string) {
   let status = "in_progress";
-  
+
   while (status !== "completed" && status !== "failed") {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     const run = await openai.beta.threads.runs.retrieve(threadId, runId);
     status = run.status;
-    
+
     if (status === "requires_action") {
       // Handle tool calls if needed
       const requiredAction = run.required_action;
       if (requiredAction?.type === "submit_tool_outputs") {
         // Handle tool outputs if needed in the future
         const toolCalls = requiredAction.submit_tool_outputs.tool_calls;
-        const toolOutputs = [];
-        
+        const toolOutputs: any = [];
+
         await openai.beta.threads.runs.submitToolOutputs(threadId, runId, {
           tool_outputs: toolOutputs,
         });
       }
     }
   }
-  
+
   return status;
 }

@@ -19,7 +19,7 @@ export function DPEValidator() {
     setIsProcessing(true);
     setDpeData(null);
     setValidationErrors([]);
-    
+
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -34,11 +34,11 @@ export function DPEValidator() {
       }
 
       const result = await response.json();
-      
+
       setDpeData(result.data);
       setValidationErrors(result.errors || []);
       setActiveTab("results");
-      
+
       if (result.errors && result.errors.length > 0) {
         toast({
           title: "Validation incomplète",
@@ -56,7 +56,8 @@ export function DPEValidator() {
       console.error("Error processing file:", error);
       toast({
         title: "Erreur",
-        description: error instanceof Error ? error.message : "Une erreur est survenue",
+        description:
+          error instanceof Error ? error.message : "Une erreur est survenue",
         variant: "destructive",
       });
     } finally {
@@ -69,17 +70,19 @@ export function DPEValidator() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="upload">Téléchargement</TabsTrigger>
-          <TabsTrigger value="results" disabled={!dpeData}>Résultats</TabsTrigger>
+          <TabsTrigger value="results" disabled={!dpeData}>
+            Résultats
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="upload" className="p-4 md:p-6">
-          <FileUploader onFileUploaded={handleFileUploaded} isProcessing={isProcessing} />
+          <FileUploader
+            onFileUploaded={handleFileUploaded}
+            isProcessing={isProcessing}
+          />
         </TabsContent>
         <TabsContent value="results" className="p-4 md:p-6">
           {dpeData && (
-            <DPEResults 
-              dpeData={dpeData} 
-              errors={validationErrors} 
-            />
+            <DPEResults dpeData={dpeData} errors={validationErrors} />
           )}
         </TabsContent>
       </Tabs>
