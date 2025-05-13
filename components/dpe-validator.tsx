@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DPEResults } from "@/components/dpe-results";
 import { DPEData } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { FileUploader } from "@/components/upload/file-uploader";
+import { consoleEasterEgg } from "@/lib/utils";
 
 export function DPEValidator() {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -14,6 +15,10 @@ export function DPEValidator() {
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState("upload");
   const { toast } = useToast();
+
+  useEffect(() => {
+    consoleEasterEgg();
+  }, []);
 
   const handleFileUploaded = async (file: File) => {
     setIsProcessing(true);
