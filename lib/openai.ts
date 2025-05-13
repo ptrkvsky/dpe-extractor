@@ -100,7 +100,7 @@ Exemple:
     });
 
     // Poll until completion
-    let runStatus = await pollRunStatus(thread.id, run.id);
+    await pollRunStatus(thread.id, run.id);
 
     // Get messages
     const messages = await openai.beta.threads.messages.list(thread.id);
@@ -119,7 +119,8 @@ Exemple:
       throw new Error("Couldn't extract valid JSON from the response");
     }
 
-    // On applique les corrections éventuelles
+    // On applique les corrections éventuelles car il pouvait y avoir des erreurs de classement avec l'llustration du graphique
+    // Il est préférable de se baser sur les chiffres
     const corrected: DpeResult = corrigerClassements(parsedJson);
 
     if (corrected) {

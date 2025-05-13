@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileUploader } from "@/components/file-uploader";
 import { DPEResults } from "@/components/dpe-results";
 import { DPEData } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
+import { FileUploader } from "@/components/upload/file-uploader";
 
 export function DPEValidator() {
   const [isProcessing, setIsProcessing] = useState(false);
